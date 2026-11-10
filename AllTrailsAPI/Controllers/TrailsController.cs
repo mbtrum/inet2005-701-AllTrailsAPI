@@ -1,7 +1,9 @@
 ﻿using AllTrailsAPI.DTOs;
+using Dapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using System.Data;
 
 namespace AllTrailsAPI.Controllers
 {
@@ -9,22 +11,30 @@ namespace AllTrailsAPI.Controllers
     [ApiController]
     public class TrailsController : ControllerBase
     {
+        private readonly IDbConnection _db;
+
         // Constructor
-        public TrailsController()
+        public TrailsController(IDbConnection db)
         {
-            // Initialize any dependencies or services here
+            _db = db;
         }
 
         // GET /api/trails
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Trail>>> GetAllTrails()
         {
-            // Create a couple sample trails to return
-            var trails = new List<Trail>
-            {
-                new Trail { Id = 1, Title = "Trail 1" },
-                new Trail { Id = 2, Title = "Trail 2" }
-            };
+            var sql = @"SELECT t.*, c.*
+                FROM Trail t 
+                INNER JOIN Category c ON t.CategoryId = c.Id";
+
+            // Fetch all trails from database. <Table 1, Table 2, Output>
+            var trails = await _db.QueryAsync<Trail,Category,Trail>(
+                sql,
+                (trail, category) =>
+                {
+                    trail.Category = category;
+                    return trail;
+                });
 
             return Ok(trails);
         }
