@@ -1,4 +1,6 @@
-﻿namespace AllTrailsAPI.DTOs
+﻿using System.Text.Json.Serialization;
+
+namespace AllTrailsAPI.DTOs
 {
     public class Trail
     {
@@ -13,6 +15,9 @@
 
         //public int CategoryId { get; set; }
 
-        public Category Category { get; set; } = null!;
+        public Category Category {  get; set; } = null!;
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public List<Review> Reviews { get; set; } = null!;
     }
 }
